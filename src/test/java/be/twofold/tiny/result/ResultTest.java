@@ -22,6 +22,29 @@ class ResultTest {
     }
 
     @Test
+    void testOfThrowsOnNull() {
+        assertThatNullPointerException()
+            .isThrownBy(() -> Result.of(null));
+    }
+
+    @Test
+    void testOfReturnsSuccess() {
+        Result<Object> result = Result.of(() -> value);
+
+        assertThat(result).isEqualTo(Result.success(value));
+    }
+
+    @Test
+    void testOfReturnsFailure() {
+        RuntimeException cause = new RuntimeException();
+        Result<Object> result = Result.of(() -> {
+            throw cause;
+        });
+
+        assertThat(result).isEqualTo(Result.failure(cause));
+    }
+
+    @Test
     void testIsSuccess() {
         assertThat(Result.success(value).isSuccess()).isTrue();
         assertThat(Result.failure(cause).isSuccess()).isFalse();

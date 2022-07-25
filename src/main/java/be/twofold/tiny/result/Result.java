@@ -1,6 +1,7 @@
 package be.twofold.tiny.result;
 
 import java.util.*;
+import java.util.function.*;
 
 public abstract class Result<T> {
 
@@ -14,6 +15,15 @@ public abstract class Result<T> {
     @SuppressWarnings("unchecked")
     public static <T> Result<T> failure(Throwable cause) {
         return (Result<T>) new Failure(cause); // Covariant cast
+    }
+
+    public static <T> Result<T> of(Supplier<T> supplier) {
+        Objects.requireNonNull(supplier, "supplier is null");
+        try {
+            return success(supplier.get());
+        } catch (Throwable cause) {
+            return failure(cause);
+        }
     }
 
     public abstract T get();
