@@ -14,7 +14,7 @@ public abstract class Result<T> {
 
     @SuppressWarnings("unchecked")
     public static <T> Result<T> failure(Throwable cause) {
-        return (Result<T>) new Failure(cause); // Covariant cast
+        return (Result<T>) new Failure(cause);
     }
 
     public static <T> Result<T> of(Supplier<T> supplier) {
@@ -36,6 +36,24 @@ public abstract class Result<T> {
 
     public final boolean isFailure() {
         return this instanceof Failure;
+    }
+
+    @SuppressWarnings("unchecked")
+    public final <R> Result<R> map(Function<? super T, ? extends R> mapper) {
+        Objects.requireNonNull(mapper, "mapper is null");
+        if (isSuccess()) {
+            return of(() -> mapper.apply(get()));
+        }
+        return (Result<R>) this;
+    }
+
+    @SuppressWarnings("unchecked")
+    public final <R> Result<R> flatMap(Function<? super T, ? extends Result<? extends R>> mapper) {
+        Objects.requireNonNull(mapper, "mapper is null");
+        if (isSuccess()) {
+            return of(() -> mapper.apply(get()).get());
+        }
+        return (Result<R>) this;
     }
 
     static final class Success<T> extends Result<T> {

@@ -7,7 +7,9 @@ import static org.assertj.core.api.Assertions.*;
 class ResultTest {
 
     private final Object value = new Object();
+    private final Result<Object> success = Result.success(value);
     private final Throwable cause = new Throwable();
+    private final Result<Object> failure = Result.failure(cause);
 
     @Test
     void testSuccessThrowsOnNull() {
@@ -30,30 +32,95 @@ class ResultTest {
     @Test
     void testOfReturnsSuccess() {
         Result<Object> result = Result.of(() -> value);
-
-        assertThat(result).isEqualTo(Result.success(value));
+        assertSuccess(result, value);
     }
 
     @Test
     void testOfReturnsFailure() {
-        RuntimeException cause = new RuntimeException();
+        RuntimeException exception = new RuntimeException();
         Result<Object> result = Result.of(() -> {
-            throw cause;
+            throw exception;
         });
 
-        assertThat(result).isEqualTo(Result.failure(cause));
+        assertFailure(result, exception);
     }
 
     @Test
     void testIsSuccess() {
-        assertThat(Result.success(value).isSuccess()).isTrue();
-        assertThat(Result.failure(cause).isSuccess()).isFalse();
+        assertThat(success.isSuccess()).isTrue();
+        assertThat(failure.isSuccess()).isFalse();
     }
 
     @Test
     void testIsFailure() {
-        assertThat(Result.success(value).isFailure()).isFalse();
-        assertThat(Result.failure(cause).isFailure()).isTrue();
+        assertThat(success.isFailure()).isFalse();
+        assertThat(failure.isFailure()).isTrue();
+    }
+
+    @Test
+    void testMapThrowsOnNull() {
+        assertThatNullPointerException()
+            .isThrownBy(() -> success.map(null));
+    }
+
+    @Test
+    void testMapOnSuccess() {
+        Result<String> result = success.map(Object::toString);
+        assertSuccess(result, value.toString());
+    }
+
+    @Test
+    void testMapOnFailure() {
+        Result<String> result = failure.map(Object::toString);
+        assertFailure(result, cause);
+    }
+
+    @Test
+    void testMapCatchesException() {
+        RuntimeException exception = new RuntimeException();
+        Result<String> result = success.map(o -> {
+            throw exception;
+        });
+        assertFailure(result, exception);
+    }
+
+    @Test
+    void testFlatMapThrowsOnNull() {
+        assertThatNullPointerException()
+            .isThrownBy(() -> success.flatMap(null));
+    }
+
+    @Test
+    void testFlatMapOnSuccess() {
+        Result<String> result = success.flatMap(o -> Result.success(o.toString()));
+        assertSuccess(result, value.toString());
+    }
+
+    @Test
+    void testFlatMapOnFailure() {
+        Result<String> result = failure.flatMap(o -> Result.success(o.toString()));
+        assertFailure(result, cause);
+    }
+
+    @Test
+    void testFlatMapCatchesException() {
+        RuntimeException exception = new RuntimeException();
+        Result<String> result = success.flatMap(o -> {
+            throw exception;
+        });
+        assertFailure(result, exception);
+    }
+
+    private <T> void assertSuccess(Result<T> result, T value) {
+        assertThat(result.isSuccess()).isTrue();
+        assertThat(result.isFailure()).isFalse();
+        assertThat(result.get()).isEqualTo(value);
+    }
+
+    private void assertFailure(Result<?> result, Throwable cause) {
+        assertThat(result.isSuccess()).isFalse();
+        assertThat(result.isFailure()).isTrue();
+        assertThat(result.getCause()).isEqualTo(cause);
     }
 
 }
