@@ -1,6 +1,5 @@
 package be.twofold.tiny.result;
 
-import nl.jqno.equalsverifier.*;
 import org.junit.jupiter.api.*;
 
 import static org.assertj.core.api.Assertions.*;
@@ -23,39 +22,15 @@ class ResultTest {
     }
 
     @Test
-    void testSuccessIsSuccess() {
+    void testIsSuccess() {
         assertThat(Result.success(value).isSuccess()).isTrue();
-    }
-
-    @Test
-    void testSuccessIsNotFailure() {
-        assertThat(Result.success(value).isFailure()).isFalse();
-    }
-
-    @Test
-    void testFailureIsNotSuccess() {
         assertThat(Result.failure(cause).isSuccess()).isFalse();
     }
 
     @Test
-    void testFailureIsFailure() {
+    void testIsFailure() {
+        assertThat(Result.success(value).isFailure()).isFalse();
         assertThat(Result.failure(cause).isFailure()).isTrue();
-    }
-
-    @Test
-    void testSuccessEqualsAndHashCode() {
-        EqualsVerifier
-            .forClass(Result.Success.class)
-            .suppress(Warning.NULL_FIELDS)
-            .verify();
-    }
-
-    @Test
-    void testFailureEqualsAndHashCode() {
-        EqualsVerifier
-            .forClass(Result.Failure.class)
-            .suppress(Warning.NULL_FIELDS)
-            .verify();
     }
 
 }

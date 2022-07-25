@@ -16,6 +16,10 @@ public abstract class Result<T> {
         return (Result<T>) new Failure(cause); // Covariant cast
     }
 
+    public abstract T get();
+
+    public abstract Throwable getCause();
+
     public final boolean isSuccess() {
         return this instanceof Success;
     }
@@ -29,6 +33,16 @@ public abstract class Result<T> {
 
         Success(T value) {
             this.value = Objects.requireNonNull(value, "value is null");
+        }
+
+        @Override
+        public T get() {
+            return value;
+        }
+
+        @Override
+        public Throwable getCause() {
+            throw new NoSuchElementException("No cause on Success");
         }
 
         @Override
@@ -53,6 +67,22 @@ public abstract class Result<T> {
 
         Failure(Throwable cause) {
             this.cause = Objects.requireNonNull(cause, "cause is null");
+        }
+
+        @Override
+        @SuppressWarnings("RedundantTypeArguments")
+        public Void get() {
+            throw this.<RuntimeException>sneakyThrow(cause);
+        }
+
+        @Override
+        public Throwable getCause() {
+            return cause;
+        }
+
+        @SuppressWarnings("unchecked")
+        private <E extends Throwable> E sneakyThrow(Throwable throwable) throws E {
+            throw (E) throwable;
         }
 
         @Override
