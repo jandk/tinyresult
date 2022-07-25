@@ -111,6 +111,36 @@ class ResultTest {
         assertFailure(result, exception);
     }
 
+    @Test
+    void testOrElseOnSuccess() {
+        Object result = success.orElse("fallback");
+        assertThat(result).isEqualTo(value);
+    }
+
+    @Test
+    void testOrElseOnFailure() {
+        Object result = failure.orElse("fallback");
+        assertThat(result).isEqualTo("fallback");
+    }
+
+    @Test
+    void testOrElseGetThrowsOnNull() {
+        assertThatNullPointerException()
+            .isThrownBy(() -> success.orElseGet(null));
+    }
+
+    @Test
+    void testOrElseGetOnSuccess() {
+        Object result = success.orElseGet(() -> "fallback");
+        assertThat(result).isEqualTo(value);
+    }
+
+    @Test
+    void testOrElseGetOnFailure() {
+        Object result = failure.orElseGet(() -> "fallback");
+        assertThat(result).isEqualTo("fallback");
+    }
+
     private <T> void assertSuccess(Result<T> result, T value) {
         assertThat(result.isSuccess()).isTrue();
         assertThat(result.isFailure()).isFalse();

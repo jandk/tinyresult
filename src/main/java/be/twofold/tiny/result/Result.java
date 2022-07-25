@@ -56,6 +56,21 @@ public abstract class Result<T> {
         return (Result<R>) this;
     }
 
+    public final T orElse(T other) {
+        if (isSuccess()) {
+            return get();
+        }
+        return other;
+    }
+
+    public final T orElseGet(Supplier<? extends T> supplier) {
+        Objects.requireNonNull(supplier, "supplier is null");
+        if (isSuccess()) {
+            return get();
+        }
+        return supplier.get();
+    }
+
     static final class Success<T> extends Result<T> {
         private final T value;
 
