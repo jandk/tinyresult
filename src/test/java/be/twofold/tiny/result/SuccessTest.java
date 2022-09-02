@@ -9,8 +9,8 @@ import static org.assertj.core.api.Assertions.*;
 
 class SuccessTest {
 
-    private final Object value = new Object();
-    private final Result<Object> success = Result.success(value);
+    private final Object value = "value";
+    private final Result<Object> success = new Result.Success<>(value);
 
     @Test
     void testEqualsAndHashCode() {
@@ -18,6 +18,12 @@ class SuccessTest {
             .forClass(Result.Success.class)
             .suppress(Warning.NULL_FIELDS)
             .verify();
+    }
+
+    @Test
+    void testToString() {
+        assertThat(success)
+            .hasToString("Success(value)");
     }
 
     @Test

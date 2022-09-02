@@ -108,24 +108,36 @@ public abstract class Result<T> {
     static final class Failure extends Result<Void> {
         private final Throwable cause;
 
+        @SuppressWarnings("RedundantTypeArguments")
         Failure(Throwable cause) {
-            this.cause = Objects.requireNonNull(cause, "cause is null");
+            Objects.requireNonNull(cause, "cause is null");
+            if (isFatal(cause)) {
+                throw Failure.<RuntimeException>doSneakyThrow(cause);
+            }
+            this.cause = cause;
+        }
+
+        private static boolean isFatal(Throwable throwable) {
+            return throwable instanceof InterruptedException
+                || throwable instanceof LinkageError
+                || throwable instanceof ThreadDeath
+                || throwable instanceof VirtualMachineError;
+        }
+
+        @SuppressWarnings("unchecked")
+        private static <E extends Throwable> E doSneakyThrow(Throwable throwable) throws E {
+            throw (E) throwable;
         }
 
         @Override
         @SuppressWarnings("RedundantTypeArguments")
         public Void get() {
-            throw this.<RuntimeException>sneakyThrow(cause);
+            throw Failure.<RuntimeException>doSneakyThrow(cause);
         }
 
         @Override
         public Throwable getCause() {
             return cause;
-        }
-
-        @SuppressWarnings("unchecked")
-        private <E extends Throwable> E sneakyThrow(Throwable throwable) throws E {
-            throw (E) throwable;
         }
 
         @Override
